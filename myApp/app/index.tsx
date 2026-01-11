@@ -61,7 +61,7 @@ export default function Index() {
   async function fetchPokemons() {
     try {
       const response = await fetch(
-        "https://pokeapi.co/api/v2/pokemon/?limit=50"
+        "https://pokeapi.co/api/v2/pokemon/?limit=150"
       );
       const data = await response.json();
 
@@ -115,7 +115,7 @@ export default function Index() {
             key={pokemon.name}
             style={{
               backgroundColor: bgColor,
-              borderRadius: 20,
+              borderRadius: 25,
               padding: 16,
               alignItems: "center",
             }}
@@ -123,7 +123,7 @@ export default function Index() {
            
             <Text
               style={{
-                fontSize: 22,
+                fontSize:30,
                 fontWeight: "bold",
                 color: "white",
                 textTransform: "capitalize",
@@ -138,7 +138,7 @@ export default function Index() {
               {pokemon.types.map((t) => (
                 <Text
                   key={t.slot}
-                  style={{ color: "white", textTransform: "capitalize" }}
+                  style={{ color: "white", textTransform: "capitalize",fontSize:20 }}
                 >
                   {t.type.name}
                 </Text>
@@ -149,11 +149,11 @@ export default function Index() {
             <View style={{ flexDirection: "row", marginBottom: 8 }}>
               <Image
                 source={{ uri: pokemon.image }}
-                style={{ width: 180, height: 180 }}
+                style={{ width: 200, height: 200 }}
               />
               <Image
                 source={{ uri: pokemon.imageBack }}
-                style={{ width: 180, height: 180 }}
+                style={{ width: 200, height: 200 }}
               />
             </View>
 
@@ -161,7 +161,7 @@ export default function Index() {
             <Text
               style={{
                 color: "white",
-                fontSize: 13,
+                fontSize: 20,
                 textAlign: "center",
                 marginBottom: 8,
               }}
@@ -172,6 +172,7 @@ export default function Index() {
          
             <Text
               style={{
+                fontSize:20,
                 color: "white",
                 fontWeight: "bold",
                 marginBottom: 4,
@@ -183,7 +184,7 @@ export default function Index() {
             {pokemon.abilities.map((a, index) => (
               <Text
                 key={index}
-                style={{ color: "white", textTransform: "capitalize" }}
+                style={{ color: "white", textTransform: "capitalize", fontSize:20}}
               >
                 • {a.ability.name}
               </Text>
