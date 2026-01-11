@@ -1,1 +1,1 @@
-# react-native-pokedex
+I Built a React Native app listing the first 150 Pokémon with their name, type, and abilities.I generally focused more on a clean, centered card design for a easier read. i had some challenges with API data fetching and image loading to deliver smooth scrolling for the  user experience.
