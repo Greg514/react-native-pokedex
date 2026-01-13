@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ScrollView, Image, View, Text } from "react-native";
+import { ScrollView, Image, View, Text, ActivityIndicator } from "react-native";
 
 interface PokemonListItem {
   name: string;
@@ -52,7 +52,8 @@ const PokemonTypeColors: Record<string, string> = {
 };
 
 export default function Index() {
-  const [pokemons, setPokemon] = useState<Pokemon[]>([]);
+  const [pokemons, setPokemons] = useState<Pokemon[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPokemons();
@@ -61,22 +62,21 @@ export default function Index() {
   async function fetchPokemons() {
     try {
       const response = await fetch(
-        "https://pokeapi.co/api/v2/pokemon/?limit=150"
+        "https://pokeapi.co/api/v2/pokemon?limit=150"
       );
       const data = await response.json();
 
       const detailedPokemon: Pokemon[] = await Promise.all(
         data.results.map(async (pokemon: PokemonListItem) => {
-         
           const res = await fetch(pokemon.url);
           const details = await res.json();
 
-        
           const speciesRes = await fetch(details.species.url);
           const species = await speciesRes.json();
 
-          const flavorText = species.flavor_text_entries?.find(
-            (entry: any) => entry.language.name === "en"
+          const flavorTextEntry = species.flavor_text_entries?.find(
+            (entry: { language: { name: string } }) =>
+              entry.language.name === "en"
           );
 
           return {
@@ -85,26 +85,40 @@ export default function Index() {
             imageBack: details.sprites.back_default,
             types: details.types,
             abilities: details.abilities,
-            description: flavorText
-              ? flavorText.flavor_text.replace(/\n|\f/g, " ")
+            description: flavorTextEntry
+              ? flavorTextEntry.flavor_text.replace(/\n|\f/g, " ")
               : "No description available.",
           };
         })
       );
 
-      setPokemon(detailedPokemon);
+      setPokemons(detailedPokemon);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to fetch Pokémon:", error);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   return (
     <ScrollView
       contentContainerStyle={{
         padding: 16,
-        gap: 16,
       }}
-      keyboardShouldPersistTaps="always" 
     >
       {pokemons.map((pokemon) => {
         const primaryType = pokemon.types[0]?.type.name;
@@ -118,77 +132,57 @@ export default function Index() {
               borderRadius: 25,
               padding: 16,
               alignItems: "center",
+              marginBottom: 16,
             }}
           >
-           
             <Text
               style={{
-                fontSize:30,
+                fontSize: 30,
                 fontWeight: "bold",
                 color: "white",
                 textTransform: "capitalize",
-                textAlign: "center",
+                marginBottom: 6,
               }}
             >
               {pokemon.name}
             </Text>
 
-         
-            <View style={{ flexDirection: "row", gap: 8, marginVertical: 6 }}>
+            <View style={{ flexDirection: "row", marginBottom: 6 }}>
               {pokemon.types.map((t) => (
                 <Text
                   key={t.slot}
-                  style={{ color: "white", textTransform: "capitalize",fontSize:20 }}
+                  style={{
+                    color: "white",
+                    textTransform: "capitalize",
+                    fontSize: 18,
+                    marginHorizontal: 6,
+                  }}
                 >
                   {t.type.name}
                 </Text>
               ))}
             </View>
 
-          
             <View style={{ flexDirection: "row", marginBottom: 8 }}>
               <Image
                 source={{ uri: pokemon.image }}
-                style={{ width: 200, height: 200 }}
+                style={{ width: 150, height: 150 }}
               />
               <Image
                 source={{ uri: pokemon.imageBack }}
-                style={{ width: 200, height: 200 }}
+                style={{ width: 150, height: 150 }}
               />
             </View>
 
-           
             <Text
               style={{
                 color: "white",
-                fontSize: 20,
                 textAlign: "center",
-                marginBottom: 8,
+                fontSize: 14,
               }}
             >
               {pokemon.description}
             </Text>
-
-         
-            <Text
-              style={{
-                fontSize:20,
-                color: "white",
-                fontWeight: "bold",
-                marginBottom: 4,
-              }}
-            >
-              Abilities
-            </Text>
-
-            {pokemon.abilities.map((a, index) => (
-              <Text
-                key={index}
-                style={{ color: "white", textTransform: "capitalize", fontSize:20}}
-              >
-                • {a.ability.name}
-              </Text>
-            ))}
           </View>
         );
       })}
