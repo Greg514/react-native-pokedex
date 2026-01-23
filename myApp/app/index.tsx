@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Animated,
+  Switch,
 } from "react-native";
 
 interface PokemonListItem {
@@ -59,13 +60,12 @@ const PokemonTypeColors: Record<string, string> = {
   fairy: "#D685AD",
 };
 
-
-function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
+function PokemonCard({ pokemon, darkMode }: { pokemon: Pokemon; darkMode: boolean }) {
   const descriptionAnim = useRef(new Animated.Value(0)).current;
   const [showDescription, setShowDescription] = useState(false);
 
   const primaryType = pokemon.types[0]?.type.name;
-  const bgColor = PokemonTypeColors[primaryType] ?? "#999";
+  const bgColor = PokemonTypeColors[primaryType] ?? (darkMode ? "#333" : "#ccc");
 
   const toggleDescription = () => {
     Animated.timing(descriptionAnim, {
@@ -91,7 +91,7 @@ function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
         style={{
           fontSize: 30,
           fontWeight: "bold",
-          color: "white",
+          color: darkMode ? "#fff" : "#000",
           textTransform: "capitalize",
           marginBottom: 6,
         }}
@@ -104,7 +104,7 @@ function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
           <Text
             key={t.slot}
             style={{
-              color: "white",
+              color: darkMode ? "#fff" : "#000",
               textTransform: "capitalize",
               fontSize: 18,
               marginHorizontal: 6,
@@ -123,14 +123,14 @@ function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
       <TouchableOpacity
         onPress={toggleDescription}
         style={{
-          backgroundColor: "rgba(0,0,0,0.3)",
+          backgroundColor: darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.3)",
           paddingVertical: 8,
           paddingHorizontal: 16,
           borderRadius: 20,
           marginBottom: 8,
         }}
       >
-        <Text style={{ color: "white", fontWeight: "bold" }}>
+        <Text style={{ color: darkMode ? "#fff" : "#000", fontWeight: "bold" }}>
           {showDescription ? "Hide Info" : "Show Info"}
         </Text>
       </TouchableOpacity>
@@ -150,7 +150,7 @@ function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
       >
         <Text
           style={{
-            color: "white",
+            color: darkMode ? "#fff" : "#000",
             textAlign: "center",
             fontSize: 14,
           }}
@@ -162,10 +162,10 @@ function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
   );
 }
 
-
 export default function Index() {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     fetchPokemons();
@@ -173,9 +173,7 @@ export default function Index() {
 
   async function fetchPokemons() {
     try {
-      const response = await fetch(
-        "https://pokeapi.co/api/v2/pokemon?limit=150"
-      );
+      const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=150");
       const data = await response.json();
 
       const detailedPokemon: Pokemon[] = await Promise.all(
@@ -187,8 +185,7 @@ export default function Index() {
           const species = await speciesRes.json();
 
           const flavorTextEntry = species.flavor_text_entries?.find(
-            (entry: { language: { name: string } }) =>
-              entry.language.name === "en"
+            (entry: { language: { name: string } }) => entry.language.name === "en"
           );
 
           return {
@@ -221,10 +218,26 @@ export default function Index() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      {pokemons.map((pokemon) => (
-        <PokemonCard key={pokemon.name} pokemon={pokemon} />
-      ))}
-    </ScrollView>
+    <View style={{ flex: 1, backgroundColor: darkMode ? "#111" : "#f2f2f2" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          padding: 16,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: darkMode ? "#fff" : "#000", marginRight: 8 }}>
+          {darkMode ? "Dark Mode" : "Light Mode"}
+        </Text>
+        <Switch value={darkMode} onValueChange={setDarkMode} />
+      </View>
+
+      <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {pokemons.map((pokemon) => (
+          <PokemonCard key={pokemon.name} pokemon={pokemon} darkMode={darkMode} />
+        ))}
+      </ScrollView>
+    </View>
   );
 }
